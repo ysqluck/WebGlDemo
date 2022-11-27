@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <p>getWebGlContext这个函数是如何适配不同浏览器的</p>
+    <canvas id="webgl" width="400" height="400">
+        Please use a browser that supports "canvas"
+    </canvas>
+    <script>
+        let canvas = document.querySelector('#webgl')
+        // 源码截取
+        var create3DContext = function (canvas, opt_attribs) {
+            var names = ["webgl", "experimental-webgl", "webkit-3d", "moz-webgl"];
+            var context = null;
+            for (var ii = 0; ii < names.length; ++ii) {
+                // 看一下chrome浏览器 对于每个names都返回了什么
+                // console.log(canvas.getContext(names[ii], opt_attribs), names[ii])
+                try {
+                    context = canvas.getContext(names[ii], opt_attribs);
+                } catch (e) { }
+                if (context) {
+                    break;
+                }
+            }
+            return context;
+        }
+        create3DContext(canvas)
+        // 执行注释的log，可以看到 如果当前浏览器不支持canvas.getContext的第一个参数则会返回null，如果成功拿到了context则会暂停
+        // Highlights：
+        // 可以在for循环外部声明变量，通过for循环内的try，catch给for循环外部的变量赋值，并在for循环内部判断变量的状态，停止for循环
+    </script>
+</body>
+
+</html>

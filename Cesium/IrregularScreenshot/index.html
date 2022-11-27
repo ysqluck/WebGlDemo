@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IrregularScreenshot</title>
+    <script src="../Cesium_1.95/Cesium.js"></script>
+    <script src="../cesium_util.js"></script>
+    <script src="./IrregularScreenshot.js"></script>
+    <script src="./dynamicDrawLine.js"></script>
+    <link rel="stylesheet" href="../Cesium_1.95/Widgets/widgets.css">
+</head>
+
+<body>
+    <div id="container"></div>
+    <script>
+        let viewer = initCesium('container')
+        let ctx = getCanvas(viewer)
+        // 通过cesium的原生鼠标事件来记录点击的点，并画出多边形
+        let mouseLeftClickOnCesiumPosList = []
+        var line = undefined; //全局线对象
+        var linearr = []; //线的坐标存储
+        //鼠标点击事件监听
+        viewer.screenSpaceEventHandler.setInputAction(function (event) {
+            //获取世界坐标点    
+            var pick = viewer.camera.getPickRay(event.position);
+            var cartesian = viewer.scene.globe.pick(pick, viewer.scene);
+            //如果世界坐标点存在
+            if (cartesian) {
+
+                //添加一个线对象
+                if (!line) {
+                    linearr.push(cartesian)
+                    line = viewer.entities.add({
+                        polyline: {
+                            positions: new Cesium.CallbackProperty(function () {
+                                return linearr;
+                            }, false),
+                            width: 3,
+                            material: Cesium.Color.RED,
+                            clampToGround: true,
+                        }
+                    })
+                }
+            }
+        }, Cesium.ScreenSpaceEventType.LEFT_CLICK)
+        //鼠标移动事件监听
+        viewer.screenSpaceEventHandler.setInputAction(function (event) {
+            var pick = viewer.camera.getPickRay(event.endPosition);
+            var cartesian = viewer.scene.globe.pick(pick, viewer.scene);
+            if (cartesian) {
+                if (line) {
+                    //考虑在鼠标移动的一瞬间,linearr应该增加一个坐标点,当再次移动时,该坐标点应该更换
+                    linearr[1] = cartesian;
+                }
+            }
+        }, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
+    </script>
+</body>
+
+</html>
